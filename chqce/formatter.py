@@ -63,13 +63,22 @@ def print_result(result: EstimateResult, suggestions: List[IndexSuggestion]) -> 
     console.print()
 
     # ── Query display ────────────────────────────────────────────────────────
-    console.print(
-        Panel(
-            Syntax(result.query.strip(), "sql", theme="monokai"),
-            title="[bold]Query[/bold]",
-            border_style="blue",
+    # Truncate the echo for huge queries so results stay visible.
+    QUERY_ECHO_LINES = 30
+    q = result.query.strip()
+    q_lines = q.split("\n")
+    if len(q_lines) > QUERY_ECHO_LINES:
+        head = "\n".join(q_lines[:QUERY_ECHO_LINES])
+        body = Syntax(head, "sql", theme="monokai")
+        title = (
+            f"[bold]Query[/bold]  "
+            f"[dim](showing {QUERY_ECHO_LINES} of {len(q_lines)} lines, "
+            f"{len(q):,} chars)[/dim]"
         )
-    )
+    else:
+        body = Syntax(q, "sql", theme="monokai")
+        title = "[bold]Query[/bold]"
+    console.print(Panel(body, title=title, border_style="blue"))
     console.print()
 
     # ── Errors ───────────────────────────────────────────────────────────────

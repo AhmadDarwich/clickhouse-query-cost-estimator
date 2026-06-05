@@ -46,6 +46,27 @@ def _collect_interactive() -> str:
     return "\n".join(lines).strip()
 
 
+def _resolve_query(query: str | None, file: str | None) -> str | None:
+    """Determine the query source, in priority order.
+
+    1. --file FILE          read the query from a file (best for huge queries)
+    2. QUERY argument       passed directly on the command line
+    3. piped stdin          e.g.  `chqce < query.sql`  or  `cat q.sql | chqce`
+    4. None                 -> caller falls back to interactive mode
+    """
+    if file:
+        with open(file, "r", encoding="utf-8") as fh:
+            return fh.read().strip()
+    if query:
+        return query
+    # Query piped in on stdin (non-interactive).
+    if not sys.stdin.isatty():
+        data = sys.stdin.read().strip()
+        if data:
+            return data
+    return None
+
+
 def _run(query: str, estimator: QueryEstimator, client, database: str, execute: bool) -> None:
     with console.status("[bold green]Analyzing…[/bold green]", spinner="dots"):
         result = estimator.estimate(query, execute=execute)
@@ -55,6 +76,8 @@ def _run(query: str, estimator: QueryEstimator, client, database: str, execute: 
 
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("query", required=False)
+@click.option("--file", "-f", "file", type=click.Path(exists=True, dir_okay=False),
+              default=None, help="Read the query from a file (best for huge queries)")
 @click.option("--host", "-H", default="localhost", envvar="CLICKHOUSE_HOST",
               show_default=True, help="ClickHouse host")
 @click.option("--port", "-p", default=8123, envvar="CLICKHOUSE_PORT", type=int,
@@ -65,16 +88,24 @@ def _run(query: str, estimator: QueryEstimator, client, database: str, execute: 
               help="Password (or set CLICKHOUSE_PASSWORD)")
 @click.option("--database", "-d", default="default", envvar="CLICKHOUSE_DATABASE",
               show_default=True, help="Default database")
+@click.option("--max-query-size", default=0, type=int, metavar="BYTES",
+              help="Raise ClickHouse max_query_size for very large queries "
+                   "(server default is 262144)")
 @click.option("--no-execute", is_flag=True, default=False,
               help="Estimate only — do not actually run the query")
 @click.version_option(__version__, "-V", "--version")
-def cli(query, host, port, user, password, database, no_execute):
+def cli(query, file, host, port, user, password, database, max_query_size, no_execute):
     """ClickHouse Query Cost Estimator.
 
     Estimates rows scanned, memory usage, and execution time for a ClickHouse
     SQL query, and suggests indexes based on WHERE-clause columns.
 
-    Pass QUERY directly, or omit it to enter interactive mode.
+    \b
+    The query can come from (in priority order):
+      • --file query.sql      best for huge / multi-line queries
+      • a QUERY argument       chqce "SELECT ..."
+      • piped stdin            chqce < query.sql
+      • interactive prompt     run with no query at all
 
     \b
     Environment variables (override defaults):
@@ -84,11 +115,19 @@ def cli(query, host, port, user, password, database, no_execute):
     \b
     Examples:
       chqce "SELECT count() FROM hits WHERE EventDate = today()"
-      chqce --host my.ch.host --database analytics --no-execute
+      chqce -f report.sql --no-execute
+      cat report.sql | chqce --max-query-size 1048576
     """
     try:
+        resolved = _resolve_query(query, file)
+    except OSError as e:
+        _err.print(f"[red]Could not read query file:[/red] {e}")
+        sys.exit(1)
+
+    try:
         client = create_client(host=host, port=port, user=user,
-                               password=password, database=database)
+                               password=password, database=database,
+                               max_query_size=max_query_size)
         ok, version_or_err = test_connection(client)
     except Exception as e:
         _err.print(f"[red]Connection error:[/red] {e}")
@@ -103,8 +142,8 @@ def cli(query, host, port, user, password, database, no_execute):
     estimator = QueryEstimator(client)
     execute = not no_execute
 
-    if query:
-        _run(query, estimator, client, database, execute)
+    if resolved:
+        _run(resolved, estimator, client, database, execute)
     else:
         while True:
             q = _collect_interactive()
