@@ -91,10 +91,17 @@ def _run(query: str, estimator: QueryEstimator, client, database: str, execute: 
 @click.option("--max-query-size", default=0, type=int, metavar="BYTES",
               help="Raise ClickHouse max_query_size for very large queries "
                    "(server default is 262144)")
+@click.option("--timeout", "-t", default=0, type=int, metavar="SECONDS",
+              help="Server-side max_execution_time; query is aborted after this "
+                   "many seconds (0 = unlimited)")
+@click.option("--max-ast-elements", default=0, type=int, metavar="N",
+              help="Raise ClickHouse max_ast_elements for queries that fail with "
+                   "'AST is too big' (server default is 50000)")
 @click.option("--no-execute", is_flag=True, default=False,
               help="Estimate only — do not actually run the query")
 @click.version_option(__version__, "-V", "--version")
-def cli(query, file, host, port, user, password, database, max_query_size, no_execute):
+def cli(query, file, host, port, user, password, database, max_query_size,
+        timeout, max_ast_elements, no_execute):
     """ClickHouse Query Cost Estimator.
 
     Estimates rows scanned, memory usage, and execution time for a ClickHouse
@@ -116,7 +123,8 @@ def cli(query, file, host, port, user, password, database, max_query_size, no_ex
     Examples:
       chqce "SELECT count() FROM hits WHERE EventDate = today()"
       chqce -f report.sql --no-execute
-      cat report.sql | chqce --max-query-size 1048576
+      chqce -t 600 "SELECT ... a slow query ..."
+      cat report.sql | chqce --max-query-size 1048576 --max-ast-elements 500000
     """
     try:
         resolved = _resolve_query(query, file)
@@ -127,7 +135,9 @@ def cli(query, file, host, port, user, password, database, max_query_size, no_ex
     try:
         client = create_client(host=host, port=port, user=user,
                                password=password, database=database,
-                               max_query_size=max_query_size)
+                               max_query_size=max_query_size,
+                               max_execution_time=timeout,
+                               max_ast_elements=max_ast_elements)
         ok, version_or_err = test_connection(client)
     except Exception as e:
         _err.print(f"[red]Connection error:[/red] {e}")

@@ -6,6 +6,7 @@ from rich.panel import Panel
 from rich.syntax import Syntax
 from rich.table import Table
 
+from .errors import classify_error
 from .estimator import EstimateResult
 from .suggestions import IndexSuggestion
 
@@ -83,9 +84,11 @@ def print_result(result: EstimateResult, suggestions: List[IndexSuggestion]) -> 
 
     # ── Errors ───────────────────────────────────────────────────────────────
     if result.explain_error:
-        console.print(f"[yellow]⚠  Estimate unavailable:[/yellow] {result.explain_error}\n")
+        _print_error("⚠  Estimate unavailable", result.explain_error,
+                     style="yellow", border="yellow")
     if result.execution_error:
-        console.print(f"[red]✗  Execution error:[/red] {result.execution_error}\n")
+        _print_error("✗  Execution error", result.execution_error,
+                     style="red", border="red")
         _print_index_suggestions(suggestions)
         return
 
@@ -181,6 +184,20 @@ def print_result(result: EstimateResult, suggestions: List[IndexSuggestion]) -> 
 
     # ── Index suggestions ─────────────────────────────────────────────────────
     _print_index_suggestions(suggestions)
+
+
+def _print_error(label: str, message: str, style: str, border: str) -> None:
+    """Render an error with a classified, actionable hint when we recognize it."""
+    classified = classify_error(message)
+    msg = message.strip()
+    body = f"[{style}]{label}[/{style}]"
+    if classified:
+        body += f"  [bold]{classified.title}[/bold]"
+    body += f"\n[dim]{msg}[/dim]"
+    if classified and classified.hint:
+        body += f"\n\n[bold]Suggestions[/bold]\n{classified.hint}"
+    console.print(Panel(body, border_style=border, expand=False))
+    console.print()
 
 
 def _print_index_suggestions(suggestions: List[IndexSuggestion]) -> None:
