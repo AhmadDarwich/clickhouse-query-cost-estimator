@@ -8,7 +8,14 @@ def create_client(
     user: str = "default",
     password: str = "",
     database: str = "default",
+    max_query_size: int = 0,
 ) -> Client:
+    # ClickHouse rejects queries larger than max_query_size (default 256 KiB).
+    # Raise it per-session for very large queries when the caller asks.
+    settings = {}
+    if max_query_size > 0:
+        settings["max_query_size"] = max_query_size
+
     return clickhouse_connect.get_client(
         host=host,
         port=port,
@@ -17,6 +24,7 @@ def create_client(
         database=database,
         connect_timeout=10,
         send_receive_timeout=300,
+        settings=settings,
     )
 
 
