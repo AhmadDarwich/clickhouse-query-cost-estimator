@@ -64,15 +64,44 @@ chqce --host my.ch.host --port 9123 --user admin --database analytics \
 chqce --no-execute "SELECT * FROM huge_table WHERE x > 0"
 ```
 
+### Large queries
+
+For big, multi-line queries (hundreds or thousands of lines) you don't want to
+wrestle with shell quoting. Read the query from a file or pipe it in instead:
+
+```bash
+# From a file — the cleanest option for huge queries
+chqce -f report.sql
+
+# Piped via stdin
+cat report.sql | chqce
+chqce < report.sql
+
+# If ClickHouse rejects it with a max_query_size error, raise the limit
+chqce -f report.sql --max-query-size 1048576   # 1 MiB
+```
+
+The query source is resolved in this priority order:
+
+1. `--file` / `-f` — read from a file
+2. `QUERY` argument — passed on the command line
+3. piped **stdin** — when input isn't a terminal
+4. interactive prompt — when nothing else is provided
+
+The echoed query is truncated to the first 30 lines in the output, so a large
+query never buries the results.
+
 ## Options
 
 | Flag | Env var | Default | Description |
 |---|---|---|---|
+| `--file` / `-f` | — | — | Read the query from a file (best for huge queries) |
 | `--host` / `-H` | `CLICKHOUSE_HOST` | `localhost` | ClickHouse host |
 | `--port` / `-p` | `CLICKHOUSE_PORT` | `8123` | HTTP port |
 | `--user` / `-u` | `CLICKHOUSE_USER` | `default` | Username |
 | `--password` / `-P` | `CLICKHOUSE_PASSWORD` | _(empty)_ | Password |
 | `--database` / `-d` | `CLICKHOUSE_DATABASE` | `default` | Default database |
+| `--max-query-size` | — | _(server default 262144)_ | Raise ClickHouse `max_query_size` for very large queries |
 | `--no-execute` | — | `false` | Skip actual execution; estimate only |
 
 ## Interactive mode
