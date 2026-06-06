@@ -3,6 +3,8 @@
 [![CI](https://github.com/AhmadDarwich/clickhouse-query-cost-estimator/actions/workflows/ci.yml/badge.svg)](https://github.com/AhmadDarwich/clickhouse-query-cost-estimator/actions/workflows/ci.yml)
 [![PyPI version](https://img.shields.io/pypi/v/chqce.svg)](https://pypi.org/project/chqce/)
 [![Python versions](https://img.shields.io/pypi/pyversions/chqce.svg)](https://pypi.org/project/chqce/)
+[![codecov](https://codecov.io/gh/AhmadDarwich/clickhouse-query-cost-estimator/branch/main/graph/badge.svg)](https://codecov.io/gh/AhmadDarwich/clickhouse-query-cost-estimator)
+[![Downloads](https://img.shields.io/pypi/dm/chqce.svg)](https://pypi.org/project/chqce/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 A terminal CLI that estimates the cost of a ClickHouse SQL query **before you regret running it**, and helps you tune indexes afterwards.
