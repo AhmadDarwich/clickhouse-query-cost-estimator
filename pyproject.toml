@@ -14,9 +14,16 @@ dependencies = [
     "sqlglot>=20.0.0",
 ]
 
+[project.optional-dependencies]
+test = ["pytest>=7.0"]
+
 [project.scripts]
 chqce = "chqce.cli:cli"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["chqce*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+

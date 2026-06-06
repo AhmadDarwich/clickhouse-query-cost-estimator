@@ -166,3 +166,15 @@ Press **Ctrl+C** to exit.
 
 - Python ≥ 3.9
 - ClickHouse with HTTP interface enabled (default port 8123)
+
+## Development
+
+Run the test suite (no ClickHouse server required — tests use a fake client):
+
+```bash
+pip install -e ".[test]"   # or: pip install -r requirements-dev.txt
+pytest
+```
+
+The tests live in `tests/` and cover error classification, the estimator,
+index suggestions, output formatting, connection settings, and the CLI.
