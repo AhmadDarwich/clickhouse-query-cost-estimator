@@ -38,7 +38,7 @@ Repository = "https://github.com/AhmadDarwich/clickhouse-query-cost-estimator"
 Issues = "https://github.com/AhmadDarwich/clickhouse-query-cost-estimator/issues"
 
 [project.optional-dependencies]
-test = ["pytest>=7.0"]
+test = ["pytest>=7.0", "pytest-cov>=4.0"]
 
 [project.scripts]
 chqce = "chqce.cli:cli"
