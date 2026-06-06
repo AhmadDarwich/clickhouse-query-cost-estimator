@@ -1,5 +1,10 @@
 # clickhouse-query-cost-estimator
 
+[![CI](https://github.com/AhmadDarwich/clickhouse-query-cost-estimator/actions/workflows/ci.yml/badge.svg)](https://github.com/AhmadDarwich/clickhouse-query-cost-estimator/actions/workflows/ci.yml)
+[![PyPI version](https://img.shields.io/pypi/v/chqce.svg)](https://pypi.org/project/chqce/)
+[![Python versions](https://img.shields.io/pypi/pyversions/chqce.svg)](https://pypi.org/project/chqce/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 A terminal CLI that estimates the cost of a ClickHouse SQL query **before you regret running it**, and helps you tune indexes afterwards.
 
 ```
@@ -42,6 +47,12 @@ Execution Stats
 | **Index suggestions** | `system.tables` ORDER BY vs WHERE columns |
 
 ## Installation
+
+```bash
+pip install chqce
+```
+
+Or, for local development:
 
 ```bash
 pip install -e .
@@ -164,7 +175,7 @@ Press **Ctrl+C** to exit.
 
 ## Requirements
 
-- Python ≥ 3.9
+- Python ≥ 3.10
 - ClickHouse with HTTP interface enabled (default port 8123)
 
 ## Development

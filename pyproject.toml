@@ -1,18 +1,41 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "chqce"
 version = "0.1.0"
 description = "ClickHouse Query Cost Estimator CLI"
+readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Ahmad Darwich", email = "darw.ahmad@gmail.com" }]
+keywords = ["clickhouse", "sql", "cli", "query", "cost", "performance", "explain"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Database",
+    "Topic :: Utilities",
+]
 dependencies = [
     "clickhouse-connect>=0.7.0",
     "rich>=13.0.0",
     "click>=8.1.0",
     "sqlglot>=20.0.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/AhmadDarwich/clickhouse-query-cost-estimator"
+Repository = "https://github.com/AhmadDarwich/clickhouse-query-cost-estimator"
+Issues = "https://github.com/AhmadDarwich/clickhouse-query-cost-estimator/issues"
 
 [project.optional-dependencies]
 test = ["pytest>=7.0"]

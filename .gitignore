@@ -1,3 +1,7 @@
-chqce/__pycache__/
+__pycache__/
 *.egg-info/
 *.pyc
+build/
+dist/
+.venv/
+.pytest_cache/
